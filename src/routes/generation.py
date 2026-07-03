@@ -4,13 +4,13 @@ from src.config.config import get_request_logger
 from src.config.model_matrix import resolve_model_name  # ◄── Imported resolution map helper
 from src.dto.enums import LLMProviderEnum
 from src.dto.agent import GenerationRequest, GenerationResponse
+from src.services.central_ai_service import CentralAIService
 
 from src.services.manager.key_manager import DynamicRotationManager
 from src.services.llm.gemini import GeminiProvider
 
 # from src.services.llm.openai import OpenAIProvider (Example reference)
 
-logger = logging.getLogger("ai_service.generation")
 router = APIRouter(prefix="/v1/ai", tags=["Central Core AI Gateway"])
 
 # Stateless factory strategy map instances
@@ -33,21 +33,8 @@ async def process_balanced_inference(
         )
 
     try:
-        # 1. Dynamically resolve specific vendor string target using provider + incoming execution tier code
-        target_model_string = resolve_model_name(payload.provider, payload.tier)
-
-        # 2. Select the least-used rotated key matching config tracking signatures
-        rotator = DynamicRotationManager(logger)
-        key_identifier, valid_api_key = await rotator.select_least_used_key(payload.provider.value)
-
-        # 3. Fire call directly with the target vendor model context resolved
-        response: GenerationResponse = await engine.generate_text(payload, valid_api_key, target_model_string)
-
-        # 4. Save metadata metrics out to core Redis channels
-        await rotator.commit_usage_metrics(payload.provider.value, key_identifier, response.tokens_used)
-
-        response.meta.key_identifier_used = key_identifier
-        return response
+        ai_service = CentralAIService(logger)
+        return await ai_service.execute_inference(payload)
 
     except ValueError as ve:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))

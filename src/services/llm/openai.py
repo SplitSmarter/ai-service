@@ -1,4 +1,5 @@
 # from openai import AsyncOpenAI
+from src.config.config import MAX_OUTPUT_TOKENS
 from src.services.llm.base import BaseLLMProvider
 from src.dto.agent import GenerationRequest, GenerationResponse
 
@@ -14,7 +15,7 @@ class OpenAIProvider(BaseLLMProvider):
             model=resolved_model,
             messages=[{"role": "user", "content": request.prompt}],
             temperature=request.temperature,
-            max_tokens=request.max_output_tokens
+            max_tokens=MAX_OUTPUT_TOKENS
         )
 
         total_tokens = response.usage.total_tokens if response.usage else 0

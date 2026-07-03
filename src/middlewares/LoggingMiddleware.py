@@ -21,7 +21,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         # Set core context states
         t_token = ctx_trace_id.set(trace_id)
         u_token = ctx_user_id.set(user_id)
-        tok_token = ctx_tokens_used.set(0)  # ◄── Initialize token context tracking at zero
+
+        # Inside your try block initialization:
+        tok_token = ctx_tokens_used.set({"total": 0})  # Initialize reference pointer
 
         start_time = time.time()
         try:
@@ -45,7 +47,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
 
             # Extract final calculated metrics registered inside task context lifecycle
-            final_tokens_processed = ctx_tokens_used.get()
+            token_context = ctx_tokens_used.get()
+            final_tokens_processed = token_context["total"] if token_context else 0
 
             duration = (time.time() - start_time) * 1000
             logger.info(

@@ -54,10 +54,16 @@ class AppSettings:
 # Instantiate global settings block for explicit component reference imports
 settings = AppSettings()
 
+USER_ID_HEADER_NAME = "X-User-Id"
+TRACE_ID_HEADER_NAME = "X-Trace-Id"
+TIME_ZONE_HEADER_NAME = "X-Time-Zone"
+MAX_BODY_LOG_LENGTH = 500
+MAX_OUTPUT_TOKENS = 1024
+
 # ==== Thread-safe Request Context Trackers ====
 ctx_trace_id: ContextVar[str] = ContextVar("trace_id", default="-")
 ctx_user_id: ContextVar[str] = ContextVar("user_id", default=None)
-ctx_tokens_used: ContextVar[int] = ContextVar("tokens_used", default=0)
+ctx_tokens_used: ContextVar[dict] = ContextVar("tokens_used", default=None)
 
 
 # ==== Logging Infrastructure Engine ====
@@ -73,7 +79,7 @@ class UTCFormatter(logging.Formatter):
         return dt.isoformat()
 
 
-LOG_FORMAT = "%(asctime)s - %(levelname)s - [%(trace_id)s] - %(name)s - %(message)s"
+LOG_FORMAT = "%(asctime)s - %(levelname)s - [%(trace_id)s] - %(name)s - %(module)s - %(message)s"
 formatter = UTCFormatter(LOG_FORMAT)
 
 # Standard Output Pipeline (Container/Docker Native Output)

@@ -55,7 +55,9 @@ class DynamicRotationManager:
     async def commit_usage_metrics(self, provider: str, identifier: str, tokens: int):
         """Atomically locks down metrics updates inside Redis registers and thread context state frames."""
         # Increments request-local logger tracking context counter
-        ctx_tokens_used.set(ctx_tokens_used.get() + tokens)
+        current_context = ctx_tokens_used.get()
+        if current_context is not None:
+            current_context["total"] += tokens
 
         # Increment persistence counter store in Redis
         r = await get_redis(self.logger)

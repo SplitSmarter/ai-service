@@ -1,5 +1,7 @@
 import google.genai as genai
 from google.genai import types
+
+from src.config.config import MAX_OUTPUT_TOKENS
 from src.services.llm.base import BaseLLMProvider
 from src.dto.agent import GenerationRequest, GenerationResponse, GenerationResponseMetadata
 from src.dto.gemini_schema import GeminiUsageMetadata
@@ -12,7 +14,7 @@ class GeminiProvider(BaseLLMProvider):
 
         config = types.GenerateContentConfig(
             temperature=request.temperature,
-            max_output_tokens=request.max_output_tokens,
+            max_output_tokens=MAX_OUTPUT_TOKENS,
         )
 
         raw_sdk_output = await client.aio.models.generate_content(
