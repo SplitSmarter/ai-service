@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from contextvars import ContextVar
 
 # Explicitly pull configurations from secrets text file
-load_dotenv("ai_service_secrets.txt")
+load_dotenv("secrets/ai_service_secrets.txt")
 
 
 class AppSettings:
@@ -29,6 +29,12 @@ class AppSettings:
 
         # Raw format template pattern string: "provider:identifier:value"
         self.AI_API_KEYS_RAW: str = os.getenv("AI_API_KEYS", "gemini:dev_agent:mock_secret_key")
+
+        self.GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv(
+            "GOOGLE_APPLICATION_CREDENTIALS",
+            "secrets/google-cloud-vision-key.json"
+        )
+        print(self.GOOGLE_APPLICATION_CREDENTIALS)
 
     @property
     def parsed_ai_keys(self) -> list[dict[str, str]]:
