@@ -34,7 +34,6 @@ class AppSettings:
             "GOOGLE_APPLICATION_CREDENTIALS",
             "secrets/google-cloud-vision-key.json"
         )
-        print(self.GOOGLE_APPLICATION_CREDENTIALS)
 
     @property
     def parsed_ai_keys(self) -> list[dict[str, str]]:
@@ -64,7 +63,7 @@ USER_ID_HEADER_NAME = "X-User-Id"
 TRACE_ID_HEADER_NAME = "X-Trace-Id"
 TIME_ZONE_HEADER_NAME = "X-Time-Zone"
 MAX_BODY_LOG_LENGTH = 500
-MAX_OUTPUT_TOKENS = 1024
+MAX_OUTPUT_TOKENS = 8192
 
 # ==== Thread-safe Request Context Trackers ====
 ctx_trace_id: ContextVar[str] = ContextVar("trace_id", default="-")

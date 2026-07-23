@@ -3,6 +3,7 @@ import logging
 from typing import Union
 from fastapi import HTTPException, status
 
+from src.config.config import get_logger
 from src.dto.agent import GenerationRequest, GenerationResponse
 from src.dto.ocr import OCRRequest, OCRResponse
 from src.dto.enums import LLMProviderEnum
@@ -13,9 +14,10 @@ from src.services.llm.base import BaseLLMProvider
 from src.services.llm.gemini import GeminiProvider
 from src.services.ocr.vision_provider import GoogleVisionOCRProvider
 
+logger = get_logger()
 
 class CentralAIService:
-    def __init__(self, logger: logging.Logger):
+    def __init__(self):
         self.logger = logger
         # Strategy Factory Map for LLMs
         self._provider_factory: dict[LLMProviderEnum, BaseLLMProvider] = {

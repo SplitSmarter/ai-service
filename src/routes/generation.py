@@ -11,19 +11,17 @@ router = APIRouter(prefix="/v1/ai", tags=["Central Core AI Gateway"])
 @router.post("/generate", response_model=GenerationResponse)
 async def process_balanced_inference(
         payload: GenerationRequest,
-        logger=Depends(get_request_logger)
 ):
-    ai_service = CentralAIService(logger)
+    ai_service = CentralAIService()
     return await ai_service.execute_inference(payload)
 
 
 @router.post("/ocr/file", response_model=OCRResponse)
 async def process_ocr_upload(
         file: UploadFile = File(...),
-        logger=Depends(get_request_logger)
 ):
     """Processes an uploaded image file using Google Cloud Vision OCR."""
-    ai_service = CentralAIService(logger)
+    ai_service = CentralAIService()
     image_bytes = await file.read()
     request = OCRRequest(image_bytes=image_bytes)
     return await ai_service.execute_ocr(request)
@@ -32,8 +30,7 @@ async def process_ocr_upload(
 @router.post("/ocr/path", response_model=OCRResponse)
 async def process_ocr_path(
         payload: OCRRequest,
-        logger=Depends(get_request_logger)
 ):
     """Processes an image from a local server file path."""
-    ai_service = CentralAIService(logger)
+    ai_service = CentralAIService()
     return await ai_service.execute_ocr(payload)

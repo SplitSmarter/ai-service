@@ -14,7 +14,7 @@ class GeminiProvider(BaseLLMProvider):
 
         config = types.GenerateContentConfig(
             temperature=request.temperature,
-            max_output_tokens=MAX_OUTPUT_TOKENS,
+            max_output_tokens=MAX_OUTPUT_TOKENS
         )
 
         raw_sdk_output = await client.aio.models.generate_content(

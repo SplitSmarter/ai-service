@@ -1,7 +1,12 @@
 # src/services/manager/key_manager.py
 import logging
+
+from redis import RedisError
+
 from src.config.config import settings, ctx_tokens_used
 from src.database.redis import get_redis
+
+logger = logging.getLogger(__name__)
 
 
 class DynamicRotationManager:
@@ -52,14 +57,16 @@ class DynamicRotationManager:
 
         return selected_match["identifier"], selected_match["value"]
 
-    async def commit_usage_metrics(self, provider: str, identifier: str, tokens: int):
-        """Atomically locks down metrics updates inside Redis registers and thread context state frames."""
-        # Increments request-local logger tracking context counter
-        current_context = ctx_tokens_used.get()
-        if current_context is not None:
-            current_context["total"] += tokens
+    async def commit_usage_metrics(self, provider: str, key_identifier: str, tokens: int):
+        """Increments key usage in Redis. Fails gracefully if Redis is unreachable."""
+        if not tokens:
+            return
 
-        # Increment persistence counter store in Redis
-        r = await get_redis(self.logger)
-        redis_metric_key = f"metrics:usage:{provider.lower()}:{identifier}"
-        await r.incrby(redis_metric_key, tokens)
+        redis_metric_key = f"metrics:{provider}:{key_identifier}"
+        try:
+            await self.redis_client.incrby(redis_metric_key, tokens)
+        except RedisError as err:
+            # Fallback: log warning so the primary inference response isn't lost
+            logger.warning(f"Failed to record token usage in Redis ({err}). Skipping metric commit.")
+        except Exception as err:
+            logger.warning(f"Unexpected error committing metrics to Redis: {err}")

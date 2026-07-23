@@ -7,6 +7,7 @@ from src.config.config import USER_ID_HEADER_NAME, TRACE_ID_HEADER_NAME, TIME_ZO
 from src.database.redis import get_redis, close_redis
 from src.middlewares.LoggingMiddleware import LoggingMiddleware
 from src.routes.generation import router as core_generation_router
+from src.routes.expense import router as expense_router
 
 logger = logging.getLogger("ai_service.main")
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,7 @@ app = FastAPI(title="Central Intelligent Inference Engine", lifespan=app_lifespa
 
 # Include unified agent adapter path
 app.include_router(core_generation_router)
+app.include_router(expense_router)
 
 custom_headers = [
     USER_ID_HEADER_NAME,
