@@ -1,33 +1,41 @@
 # src/services/central_ai_service.py
-import logging
-from typing import Union
 from fastapi import HTTPException, status
 
 from src.config.config import get_logger
-from src.dto.agent import GenerationRequest, GenerationResponse
+from src.config.ocr_model_matrix import resolve_provider_name
+from src.dto.llm.agent import GenerationRequest, GenerationResponse
 from src.dto.ocr import OCRRequest, OCRResponse
-from src.dto.enums import LLMProviderEnum
-from src.config.model_matrix import resolve_model_name
+from src.dto.enums import LLMProviderEnum, UserTierEnum, OCRProviderEnum
+from src.config.llm_model_matrix import resolve_model_name
 
 from src.services.manager.key_manager import DynamicRotationManager
 from src.services.llm.base import BaseLLMProvider
 from src.services.llm.gemini import GeminiProvider
-from src.services.ocr.vision_provider import GoogleVisionOCRProvider
+
+from src.services.ocr.base import BaseOCRProvider
+from src.services.ocr.easy_ocr import EasyOCRProvider
+from src.services.ocr.google_vision import GoogleVisionOCRProvider
 
 logger = get_logger()
+
 
 class CentralAIService:
     def __init__(self):
         self.logger = logger
+
         # Strategy Factory Map for LLMs
-        self._provider_factory: dict[LLMProviderEnum, BaseLLMProvider] = {
+        self._llm_factory: dict[LLMProviderEnum, BaseLLMProvider] = {
             LLMProviderEnum.GEMINI: GeminiProvider()
         }
-        # OCR Engine Instance
-        self._ocr_provider = GoogleVisionOCRProvider(logger=self.logger)
+
+        # Strategy Factory Map for OCR Engines
+        self._ocr_factory: dict[UserTierEnum, BaseOCRProvider] = {
+            OCRProviderEnum.EASY_OCR: EasyOCRProvider(logger=self.logger),
+            OCRProviderEnum.GOOGLE_VISION: GoogleVisionOCRProvider(logger=self.logger)
+        }
 
     async def execute_ocr(self, request: OCRRequest) -> OCRResponse:
-        """Processes images via OCR to extract text and block layouts."""
+        """Processes images via OCR strategy matching requested provider and tier."""
         try:
             input_source = request.image_bytes or request.image_path
             if not input_source:
@@ -36,8 +44,19 @@ class CentralAIService:
                     detail="Either 'image_path' or 'image_bytes' must be provided."
                 )
 
-            self.logger.info("Starting Google Vision OCR text extraction pipeline...")
-            ocr_result = self._ocr_provider.process_image(input_source)
+            # Resolve OCR strategy from factory map
+            provider = resolve_provider_name(request.tier)
+            ocr_engine = self._ocr_factory.get(provider)
+            if not ocr_engine:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unsupported OCR provider framework: '{request.provider}'"
+                )
+
+            self.logger.info(
+                f"Starting OCR pipeline [Provider: {provider}, Tier: {request.tier}]..."
+            )
+            ocr_result = ocr_engine.process_image(input_source=input_source, tier=request.tier)
             self.logger.info(f"OCR completed successfully. Extracted {len(ocr_result.blocks)} blocks.")
 
             return ocr_result
@@ -55,7 +74,7 @@ class CentralAIService:
 
     async def execute_inference(self, request: GenerationRequest) -> GenerationResponse:
         """Orchestrates full operational lifecycle pipelines behind a single interface call."""
-        engine = self._provider_factory.get(request.provider)
+        engine = self._llm_factory.get(request.provider)
         if not engine:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

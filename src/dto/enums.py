@@ -6,7 +6,7 @@ class LLMProviderEnum(str, Enum):
     OPENAI = "openai"
 
 
-class ExecutionTierEnum(IntEnum):
+class UserTierEnum(IntEnum):
     """
     1 = Lightweight/Fastest (Flash / Mini models)
     2 = Balanced standard capability
@@ -17,6 +17,10 @@ class ExecutionTierEnum(IntEnum):
     TIER_2 = 2
     TIER_3 = 3
     TIER_4 = 4
+
+class OCRProviderEnum(str, Enum):
+    EASY_OCR = "easyocr"
+    GOOGLE_VISION = "google_vision"
 
 
 class GeminiModelEnum(str, Enum):

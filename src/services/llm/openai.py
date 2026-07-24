@@ -1,7 +1,7 @@
 # from openai import AsyncOpenAI
 from src.config.config import MAX_OUTPUT_TOKENS
 from src.services.llm.base import BaseLLMProvider
-from src.dto.agent import GenerationRequest, GenerationResponse
+from src.dto.llm.agent import GenerationRequest, GenerationResponse
 
 
 class OpenAIProvider(BaseLLMProvider):

@@ -63,7 +63,7 @@ USER_ID_HEADER_NAME = "X-User-Id"
 TRACE_ID_HEADER_NAME = "X-Trace-Id"
 TIME_ZONE_HEADER_NAME = "X-Time-Zone"
 MAX_BODY_LOG_LENGTH = 500
-MAX_OUTPUT_TOKENS = 8192
+MAX_OUTPUT_TOKENS = 16384
 
 # ==== Thread-safe Request Context Trackers ====
 ctx_trace_id: ContextVar[str] = ContextVar("trace_id", default="-")

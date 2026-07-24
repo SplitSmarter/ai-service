@@ -1,10 +1,9 @@
 # src/services/user_ai_service.py
-import logging
 from fastapi import HTTPException, status
 
 from src.config.config import get_logger
-from src.dto.agent import GenerationRequest, GenerationResponse
-from src.dto.enums import LLMProviderEnum, ExecutionTierEnum
+from src.dto.llm.agent import GenerationRequest, GenerationResponse
+from src.dto.enums import LLMProviderEnum, UserTierEnum
 from src.services.central_ai_service import CentralAIService
 
 logger = get_logger()
@@ -18,7 +17,7 @@ class UserAIService:
     async def generate_user_response(
             self,
             prompt: str,
-            tier: ExecutionTierEnum,
+            tier: UserTierEnum,
             temperature: float = 0.7
     ) -> GenerationResponse:
         """

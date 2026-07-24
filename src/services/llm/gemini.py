@@ -3,8 +3,8 @@ from google.genai import types
 
 from src.config.config import MAX_OUTPUT_TOKENS
 from src.services.llm.base import BaseLLMProvider
-from src.dto.agent import GenerationRequest, GenerationResponse, GenerationResponseMetadata
-from src.dto.gemini_schema import GeminiUsageMetadata
+from src.dto.llm.agent import GenerationRequest, GenerationResponse, GenerationResponseMetadata
+from src.dto.llm.gemini_schema import GeminiUsageMetadata
 
 
 class GeminiProvider(BaseLLMProvider):

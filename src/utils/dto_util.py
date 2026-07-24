@@ -6,7 +6,7 @@ from typing import Type, TypeVar
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 
-from src.dto.agent import GenerationResponse
+from src.dto.llm.agent import GenerationResponse
 
 logger = logging.getLogger(__name__)
 

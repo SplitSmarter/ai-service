@@ -3,6 +3,9 @@ from datetime import date
 from typing import List, Optional, Union
 from pydantic import BaseModel, Field, model_validator
 
+from src.dto.enums import UserTierEnum
+
+
 # Enums & Value Objects
 class COICOPCategory(BaseModel):
     code: str = Field(description="COICOP classification code (e.g., '01.1.1')")
@@ -81,3 +84,10 @@ class ExtractedExpenseDraftResponse(BaseModel):
     paid_by: List[PersonShare] = Field(default_factory=list, description="People who paid for this expense")
     sharers: List[PersonShare] = Field(default_factory=list, description="People sharing this expense")
     items: List[ExtractedItem] = Field(default_factory=list, description="Extracted line items")
+
+
+class ExtractFromUrlsRequest(BaseModel):
+    image_urls: List[str] = Field(..., description="List of remote image URLs to process")
+    user_text: Optional[str] = Field(None, description="Optional notes or contextual text from user")
+    current_user_name: str = Field("Default User", description="Logged-in user name")
+    tier: UserTierEnum = Field(UserTierEnum.TIER_2, description="Execution tier")

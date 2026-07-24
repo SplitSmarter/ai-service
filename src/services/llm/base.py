@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.dto.agent import GenerationRequest, GenerationResponse
+from src.dto.llm.agent import GenerationRequest, GenerationResponse
 
 class BaseLLMProvider(ABC):
     @abstractmethod

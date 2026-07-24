@@ -1,11 +1,11 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-from src.dto.enums import LLMProviderEnum, ExecutionTierEnum
-from src.dto.gemini_schema import GeminiUsageMetadata
+from src.dto.enums import LLMProviderEnum, UserTierEnum
+from src.dto.llm.gemini_schema import GeminiUsageMetadata
 
 class GenerationRequest(BaseModel):
     provider: LLMProviderEnum = Field(..., description="Target model framework engine: 'gemini' or 'openai'")
-    tier: ExecutionTierEnum = Field(default=ExecutionTierEnum.TIER_1, description="Performance execution tier: 1 to 4")
+    tier: UserTierEnum = Field(default=UserTierEnum.TIER_1, description="Performance execution tier: 1 to 4")
     prompt: str = Field(..., description="Context input payload instructions")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
 

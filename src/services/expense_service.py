@@ -1,13 +1,12 @@
 # src/services/expense_service.py
 import json
-import logging
 from datetime import datetime
 from typing import List, Optional
 from fastapi import HTTPException, UploadFile, status
 
 from src.config.config import get_logger
-from src.dto.agent import GenerationResponse
-from src.dto.enums import ExecutionTierEnum
+from src.dto.llm.agent import GenerationResponse
+from src.dto.enums import UserTierEnum
 from src.dto.expense.expense import ExtractedExpenseDraftResponse
 from src.dto.ocr import OCRRequest, OCRResponse
 from src.services.central_ai_service import CentralAIService
@@ -29,7 +28,7 @@ class ExpenseService:
         files: List[UploadFile],
         user_text: Optional[str],
         current_user_name: str,
-        tier: ExecutionTierEnum = ExecutionTierEnum.TIER_4
+        tier: UserTierEnum = UserTierEnum.TIER_4
     ) -> GenerationResponse:
         """
         Extracts OCR via CentralAIService, merges user notes, crafts the structured
@@ -41,7 +40,7 @@ class ExpenseService:
             for file in files:
                 file_bytes = await file.read()
                 ocr_response: OCRResponse = await self.central_ai_service.execute_ocr(
-                    OCRRequest(image_bytes=file_bytes)
+                    OCRRequest(image_bytes=file_bytes, tier=tier)
                 )
                 if ocr_response and ocr_response.full_text:
                     raw_ocr_texts.append(ocr_response.full_text)
@@ -83,7 +82,7 @@ class ExpenseService:
         image_urls: List[str],
         user_text: Optional[str],
         current_user_name: str,
-        tier: ExecutionTierEnum = ExecutionTierEnum.TIER_4
+        tier: UserTierEnum = UserTierEnum.TIER_2
     ) -> GenerationResponse:
         """
         Downloads receipt images from remote URLs, extracts text via ImageUtils,
@@ -95,7 +94,7 @@ class ExpenseService:
             for url in image_urls:
                 self.logger.info(f"Downloading and processing image from URL: {url}")
                 # Downloads image bytes and runs OCR extraction
-                extracted_text = await self.image_utils.parse_image_url(image_url=url)
+                extracted_text = await self.image_utils.parse_image_url(image_url=url, tier=tier)
                 if extracted_text and extracted_text.strip():
                     raw_ocr_texts.append(extracted_text)
 

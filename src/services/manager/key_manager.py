@@ -4,7 +4,7 @@ import logging
 from redis import RedisError
 
 from src.config.config import settings, ctx_tokens_used
-from src.database.redis import get_redis
+from src.database.redis import get_redis, increment_key
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +64,8 @@ class DynamicRotationManager:
 
         redis_metric_key = f"metrics:{provider}:{key_identifier}"
         try:
-            await self.redis_client.incrby(redis_metric_key, tokens)
+            await increment_key(redis_metric_key, tokens, self.logger)
         except RedisError as err:
-            # Fallback: log warning so the primary inference response isn't lost
             logger.warning(f"Failed to record token usage in Redis ({err}). Skipping metric commit.")
         except Exception as err:
             logger.warning(f"Unexpected error committing metrics to Redis: {err}")

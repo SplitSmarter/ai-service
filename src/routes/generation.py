@@ -1,7 +1,6 @@
 # src/routes/ai_router.py
-from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File
-from src.config.config import get_request_logger
-from src.dto.agent import GenerationRequest, GenerationResponse
+from fastapi import APIRouter, UploadFile, File
+from src.dto.llm.agent import GenerationRequest, GenerationResponse
 from src.dto.ocr import OCRRequest, OCRResponse
 from src.services.central_ai_service import CentralAIService
 
