@@ -1,3 +1,4 @@
+# src/services/expense_service.py
 import json
 import logging
 from datetime import datetime
@@ -11,16 +12,17 @@ from src.dto.expense.expense import ExtractedExpenseDraftResponse
 from src.dto.ocr import OCRRequest, OCRResponse
 from src.services.central_ai_service import CentralAIService
 from src.services.user_service import UserAIService
+from src.utils.image_util import ImageUtils
 
 logger = get_logger()
 
+
 class ExpenseService:
-    def __init__(
-        self
-    ):
+    def __init__(self):
         self.logger = logger
         self.central_ai_service = CentralAIService()
         self.user_ai_service = UserAIService(self.central_ai_service)
+        self.image_utils = ImageUtils(self.central_ai_service)
 
     async def extract_expense_from_receipt(
         self,
@@ -49,14 +51,12 @@ class ExpenseService:
                 if raw_ocr_texts else "NO_OCR_TEXT_FOUND"
             )
 
-            # 2. Build structured extraction prompt containing JSON Schema
+            # 2. Build structured extraction prompt
             extraction_prompt = self._build_extraction_prompt(
                 ocr_text=combined_ocr_text,
                 user_text=user_text,
                 current_user_name=current_user_name
             )
-
-            print(extraction_prompt)
 
             self.logger.info("Routing prompt to UserAIService for structured inference.")
 
@@ -76,6 +76,57 @@ class ExpenseService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to process and extract expense details from provided receipt inputs."
+            )
+
+    async def extract_expense_from_urls(
+        self,
+        image_urls: List[str],
+        user_text: Optional[str],
+        current_user_name: str,
+        tier: ExecutionTierEnum = ExecutionTierEnum.TIER_4
+    ) -> GenerationResponse:
+        """
+        Downloads receipt images from remote URLs, extracts text via ImageUtils,
+        and delegates structured expense extraction to UserAIService.
+        """
+        try:
+            raw_ocr_texts = []
+
+            for url in image_urls:
+                self.logger.info(f"Downloading and processing image from URL: {url}")
+                # Downloads image bytes and runs OCR extraction
+                extracted_text = await self.image_utils.parse_image_url(image_url=url)
+                if extracted_text and extracted_text.strip():
+                    raw_ocr_texts.append(extracted_text)
+
+            combined_ocr_text = (
+                "\n--- NEXT FILE ---\n".join(raw_ocr_texts)
+                if raw_ocr_texts else "NO_OCR_TEXT_FOUND"
+            )
+
+            extraction_prompt = self._build_extraction_prompt(
+                ocr_text=combined_ocr_text,
+                user_text=user_text,
+                current_user_name=current_user_name
+            )
+
+            self.logger.info("Routing prompt from URL extraction to UserAIService.")
+
+            response: GenerationResponse = await self.user_ai_service.generate_user_response(
+                prompt=extraction_prompt,
+                tier=tier,
+                temperature=0.1
+            )
+
+            return response
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            self.logger.exception(f"Failure inside ExpenseService during URL processing: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to process and extract expense details from provided image URLs."
             )
 
     def _build_extraction_prompt(
