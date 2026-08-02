@@ -22,11 +22,11 @@ router = APIRouter(prefix="/expenses", tags=["Expenses"])
     summary="Extract draft expense details from receipt files and user prompt"
 )
 async def extract_expense(
-    files: List[UploadFile] = File([], description="Uploaded receipt image or PDF files"),
-    user_text: Optional[str] = Form(None, description="Optional notes or contextual text from user"),
-    current_user_name: str = Form("Default User", description="Logged in user name context"),
-    tier: UserTierEnum = Form(UserTierEnum.TIER_1),
-    expense_service: ExpenseService = Depends()
+        files: List[UploadFile] = File([], description="Uploaded receipt image or PDF files"),
+        user_text: Optional[str] = Form(None, description="Optional notes or contextual text from user"),
+        current_user_name: str = Form("Default User", description="Logged in user name context"),
+        tier: UserTierEnum = Form(UserTierEnum.TIER_1),
+        expense_service: ExpenseService = Depends()
 ) -> SuccessResponse[ExtractedExpenseDraftResponse, None]:
     """
     Accepts raw receipt files along with optional user context strings, extracts OCR,
@@ -54,8 +54,8 @@ async def extract_expense(
     summary="Test endpoint: Extract expense details from a list of remote image URLs"
 )
 async def extract_expense_from_urls(
-    payload: ExtractFromUrlsRequest,
-    expense_service: ExpenseService = Depends()
+        payload: ExtractFromUrlsRequest,
+        expense_service: ExpenseService = Depends()
 ) -> SuccessResponse[ExtractedExpenseDraftResponse, None]:
     """
     Downloads raw image files from provided URLs, runs OCR parsing,

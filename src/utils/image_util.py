@@ -28,6 +28,7 @@ class ImageUtils:
         directly on an in-memory byte stream to optimize OCR text extraction accuracy.
         """
         try:
+            # TODO: verify this implementation
             # Decode byte array to OpenCV image array
             np_arr = np.frombuffer(image_bytes, np.uint8)
             img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
