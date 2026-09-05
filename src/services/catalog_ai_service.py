@@ -15,6 +15,7 @@ from src.services.user_service import UserAIService
 
 logger = get_logger()
 
+# TODO: Add the unit of measure extraction for the product
 
 class CatalogAIService:
     def __init__(self):

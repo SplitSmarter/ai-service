@@ -25,6 +25,7 @@ class OCRProviderEnum(str, Enum):
 
 class GeminiModelEnum(str, Enum):
     FLASH_2_5 = "gemini-2.5-flash"
+    FLASH_3_5_LITE = "gemini-3.5-flash-lite"
     PRO_2_5 = "gemini-2.5-pro"
     # Keeping it flexible to support experimental/thinking models if needed later
     FLASH_THINKING = "gemini-2.5-flash-thinking-exp"
