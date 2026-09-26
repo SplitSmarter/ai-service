@@ -12,6 +12,9 @@ from src.routes.generation import router as core_generation_router
 from src.routes.expense import router as expense_router
 from src.routes.catalog import router as catalog_router
 from src.routes.chat import router as chat_router
+from src.routes.mcc import router as mcc_router
+from src.routes.cpc import router as cpc_router
+from src.routes.coicop import router as coicop_router
 
 logger = logging.getLogger("ai_service.main")
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +36,9 @@ app.include_router(core_generation_router)
 app.include_router(expense_router)
 app.include_router(catalog_router)
 app.include_router(chat_router)
+app.include_router(mcc_router)
+app.include_router(cpc_router)
+app.include_router(coicop_router)
 
 custom_headers = [
     USER_ID_HEADER_NAME,

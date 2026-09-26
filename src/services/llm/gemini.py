@@ -6,7 +6,7 @@ from src.services.llm.base import BaseLLMProvider
 from src.dto.llm.agent import GenerationRequest, GenerationResponse, GenerationResponseMetadata
 from src.dto.llm.gemini_schema import GeminiUsageMetadata
 
-
+# TODO: here rotate the key if one gets 429
 class GeminiProvider(BaseLLMProvider):
 
     async def generate_text(self, request: GenerationRequest, api_key: str, resolved_model: str) -> GenerationResponse:

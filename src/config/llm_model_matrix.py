@@ -6,7 +6,7 @@ PROVIDER_TIER_MODEL_MATRIX: dict[LLMProviderEnum, dict[UserTierEnum, str]] = {
         UserTierEnum.TIER_1: GeminiModelEnum.FLASH_2_5.value,
         UserTierEnum.TIER_2: GeminiModelEnum.FLASH_2_5.value,  # Fallbacks or specific versions can match
         UserTierEnum.TIER_3: GeminiModelEnum.FLASH_3_5_LITE.value,
-        UserTierEnum.TIER_4: GeminiModelEnum.FLASH_3_5_LITE.value,
+        UserTierEnum.TIER_4: GeminiModelEnum.PRO_3_1_PREVIEW.value,
     },
     LLMProviderEnum.OPENAI: {
         UserTierEnum.TIER_1: OpenAIModelEnum.GPT_4O_MINI.value,

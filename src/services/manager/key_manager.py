@@ -60,12 +60,15 @@ class DynamicRotationManager:
     async def commit_usage_metrics(self, provider: str, key_identifier: str, tokens: int):
         """Increments key usage in Redis. Fails gracefully if Redis is unreachable."""
         if not tokens:
+            self.logger.warning(f"Tokens value is 0 or missing for {key_identifier}. Skipping commit.")
             return
 
-        redis_metric_key = f"metrics:{provider}:{key_identifier}"
+        # FIX: Added ':usage' so it matches the lookup key
+        redis_metric_key = f"metrics:usage:{provider}:{key_identifier}"
+
         try:
             await increment_key(redis_metric_key, tokens, self.logger)
         except RedisError as err:
-            logger.warning(f"Failed to record token usage in Redis ({err}). Skipping metric commit.")
+            self.logger.warning(f"Failed to record token usage in Redis ({err}). Skipping metric commit.")
         except Exception as err:
-            logger.warning(f"Unexpected error committing metrics to Redis: {err}")
+            self.logger.warning(f"Unexpected error committing metrics to Redis: {err}")
