@@ -58,10 +58,15 @@ register_exception_handlers(app)
 
 
 @app.get("/")
-def health_check(request: Request):
+def root(request: Request):
     return JSONResponse(
         status_code=200,
         content={
-            "message": "User Service is running"
+            "message": "AI Service is running"
         }
     )
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "ai-service"}
+
