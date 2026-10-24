@@ -3,12 +3,10 @@ import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 
-from src.dto.llm.agent import GenerationResponse
 from src.dto.enums import UserTierEnum
 from src.dto.expense.expense import ExtractedExpenseDraftResponse, ExtractFromUrlsRequest
 from src.dto.base import SuccessResponse
 from src.services.expense_service import ExpenseService
-from src.utils.dto_util import DTOUtils
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +30,12 @@ async def extract_expense(
     Accepts raw receipt files along with optional user context strings, extracts OCR,
     and returns structured draft expense details wrapped in SuccessResponse.
     """
-    gen_response: GenerationResponse = await expense_service.extract_expense_from_receipt(
+    draft_data = await expense_service.extract_expense_from_receipt(
         files=files,
         user_text=user_text,
         current_user_name=current_user_name,
         tier=tier
     )
-
-    draft_data = DTOUtils.parse_llm_response(gen_response, ExtractedExpenseDraftResponse)
 
     return SuccessResponse(
         message="Expense details extracted successfully",
@@ -61,14 +57,12 @@ async def extract_expense_from_urls(
     Downloads raw image files from provided URLs, runs OCR parsing,
     and returns structured draft expense details wrapped in SuccessResponse.
     """
-    gen_response: GenerationResponse = await expense_service.extract_expense_from_urls(
+    draft_data = await expense_service.extract_expense_from_urls(
         image_urls=payload.image_urls,
         user_text=payload.user_text,
         current_user_name=payload.current_user_name,
         tier=payload.tier
     )
-
-    draft_data = DTOUtils.parse_llm_response(gen_response, ExtractedExpenseDraftResponse)
 
     return SuccessResponse(
         message="Expense details extracted successfully from URLs",
