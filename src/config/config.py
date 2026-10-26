@@ -1,7 +1,9 @@
+import json
 import os
 import sys
 import logging
 from datetime import datetime, timezone
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from dotenv import load_dotenv
 from contextvars import ContextVar
@@ -73,30 +75,36 @@ ctx_tokens_used: ContextVar[dict] = ContextVar("tokens_used", default=None)
 
 # ==== Logging Infrastructure Engine ====
 
-class UTCFormatter(logging.Formatter):
-    """Custom UTC formatter for consistent structural tracking timestamps."""
-    converter = datetime.fromtimestamp
+class JsonFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        trace_id = getattr(record, "trace_id", None) or "-"
+        payload = {
+            "ts": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "level": record.levelname,
+            "service": settings.APP_NAME,
+            "trace_id": trace_id,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+        return json.dumps(payload, ensure_ascii=False)
 
-    def formatTime(self, record, datefmt=None):
-        dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
-        if datefmt:
-            return dt.strftime(datefmt)
-        return dt.isoformat()
 
+formatter = JsonFormatter()
 
-LOG_FORMAT = "%(asctime)s - %(levelname)s - [%(trace_id)s] - %(name)s - %(module)s - %(message)s"
-formatter = UTCFormatter(LOG_FORMAT)
-
-# Standard Output Pipeline (Container/Docker Native Output)
 stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setFormatter(formatter)
 
-# Enforce target logs folder structural presence on initialization boot
-LOG_FILE_PATH = "logs/user-service.log"
+LOG_FILE_PATH = "logs/app.log"
 Path(LOG_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
 
-# Standard Local Output Log File Handling Pipeline
-file_handler = logging.FileHandler(LOG_FILE_PATH)
+file_handler = RotatingFileHandler(
+    LOG_FILE_PATH,
+    maxBytes=10 * 1024 * 1024,
+    backupCount=3,
+    encoding="utf-8",
+)
 file_handler.setFormatter(formatter)
 
 # Build centralized application logger tracking instance
